@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcription Factor Heatmap Browser - Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .demo-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        select, input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .search-btn {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .search-btn:hover {
+            background: #45a049;
+        }
+        
+        .search-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .heatmap-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .heatmap-image {
+            max-width: 100%;
+            max-height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .info-panel {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .demo-warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #d32f2f;
+        }
+        
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧬 Transcription Factor Heatmap Browser</h1>
+        <div class="demo-badge">DEMO VERSION</div>
+        
+        <div class="demo-warning">
+            <strong>📍 演示版说明:</strong> 这是一个演示版本，每个转录因子只包含chr1_0.png文件用于功能展示。完整版本包含所有染色体和位置的数据。
+        </div>
+        
+        <div class="info-panel">
+            <strong>📖 使用说明:</strong> 选择转录因子、ENCODE数据集和染色体，然后输入位置 "0" 来查看演示heatmap图像。每个PNG文件覆盖2MB基因组窗口。
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="tfSelect">Transcription Factor (TF):</label>
+                <select id="tfSelect">
+                    <option value="">Select TF...</option>
+                    <option value="KLF4">KLF4</option>
+                    <option value="NANOG">NANOG</option>
+                    <option value="OCT4">OCT4</option>
+                    <option value="Rad21">Rad21</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="encodeSelect">ENCODE ID:</label>
+                <select id="encodeSelect" disabled>
+                    <option value="">Select TF first...</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="chrSelect">Chromosome:</label>
+                <select id="chrSelect" disabled>
+                    <option value="">Select ENCODE first...</option>
+                    <option value="chr1">chr1 (demo only)</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="positionInput">Genomic Position:</label>
+                <input type="number" id="positionInput" placeholder="Enter 0 for demo" disabled>
+                <button class="search-btn" id="searchBtn" disabled>View Heatmap</button>
+            </div>
+        </div>
+        
+        <div class="heatmap-container" id="heatmapContainer">
+            <div class="loading">请选择参数查看演示heatmap</div>
+        </div>
+    </div>
+
+    <script>
+        const tfEncodeMap = {
+            'KLF4': ['ENCFF761ZKW'],
+            'NANOG': ['ENCFF153EHS', 'ENCFF926YZX'],
+            'OCT4': ['ENCFF003PEE', 'ENCFF259JPA', 'ENCFF906LPL'],
+            'Rad21': ['ENCFF056GWP', 'ENCFF081AYT']
+        };
+        
+        const tfSelect = document.getElementById('tfSelect');
+        const encodeSelect = document.getElementById('encodeSelect');
+        const chrSelect = document.getElementById('chrSelect');
+        const positionInput = document.getElementById('positionInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const heatmapContainer = document.getElementById('heatmapContainer');
+        
+        tfSelect.addEventListener('change', function() {
+            const selectedTF = this.value;
+            encodeSelect.innerHTML = '<option value="">Select ENCODE ID...</option>';
+            encodeSelect.disabled = !selectedTF;
+            chrSelect.disabled = true;
+            positionInput.disabled = true;
+            searchBtn.disabled = true;
+            
+            if (selectedTF && tfEncodeMap[selectedTF]) {
+                tfEncodeMap[selectedTF].forEach(encode => {
+                    const option = document.createElement('option');
+                    option.value = encode;
+                    option.textContent = encode;
+                    encodeSelect.appendChild(option);
+                });
+                encodeSelect.disabled = false;
+            }
+        });
+        
+        encodeSelect.addEventListener('change', function() {
+            const selectedEncode = this.value;
+            chrSelect.disabled = !selectedEncode;
+            positionInput.disabled = !selectedEncode;
+            searchBtn.disabled = !selectedEncode;
+            
+            if (selectedEncode) {
+                chrSelect.value = 'chr1';
+                positionInput.value = '0';
+            }
+        });
+        
+        function displayHeatmap() {
+            const tf = tfSelect.value;
+            const encode = encodeSelect.value;
+            const chr = chrSelect.value;
+            const position = parseInt(positionInput.value);
+            
+            if (!tf || !encode || !chr || position !== 0) {
+                showError('演示版只支持chr1位置0的数据。请选择chr1并输入位置0。');
+                return;
+            }
+            
+            const imagePath = `./data/${tf}/${encode}/${chr}/chr1_0.png`;
+            
+            heatmapContainer.innerHTML = `
+                <div class="loading">Loading demo heatmap...</div>
+                <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                    <strong>File:</strong> ${imagePath}<br>
+                    <strong>Window:</strong> 0 - 2,097,152 bp (2MB)<br>
+                    <strong>Demo Version:</strong> Only chr1_0.png available
+                </div>
+            `;
+            
+            const img = new Image();
+            img.onload = function() {
+                heatmapContainer.innerHTML = `
+                    <img src="${imagePath}" alt="${tf} Demo Heatmap" class="heatmap-image">
+                    <div style="margin-top: 15px; font-size: 12px; color: #666;">
+                        <strong>🧬 TF:</strong> ${tf} | <strong>📊 ENCODE:</strong> ${encode} | <strong>🗺️ Chromosome:</strong> ${chr}<br>
+                        <strong>📍 Position:</strong> ${position.toLocaleString()} bp | <strong>📏 Window:</strong> 0 - 2,097,152 bp<br>
+                        <strong>📁 File:</strong> chr1_0.png | <strong>🎯 Demo Version:</strong> Showing sample data
+                    </div>
+                `;
+            };
+            
+            img.onerror = function() {
+                showError(`无法加载演示图像: chr1_0.png<br>请确认已选择正确的转录因子和ENCODE数据集。`);
+            };
+            
+            img.src = imagePath;
+        }
+        
+        function showError(message) {
+            heatmapContainer.innerHTML = `
+                <div class="error-message">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+        
+        searchBtn.addEventListener('click', displayHeatmap);
+        
+        positionInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                displayHeatmap();
+            }
+        });
+    </script>
+</body>
+</html>
