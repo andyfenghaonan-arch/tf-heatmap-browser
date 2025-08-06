@@ -2,6 +2,12 @@
 
 🧬 **A lightweight demonstration of Hi-ChIP data visualization for transcription factors**
 
+## 🌐 Live Demo
+
+**Access the live demo here:** https://andyfenghaonan-arch.github.io/tf-heatmap-browser/
+
+*Deployed on GitHub Pages for easy access and demonstration.*
+
 ## Demo Overview
 
 This is a **demo version** of the TF Heatmap Browser containing only `chr1_0.png` files from each transcription factor dataset for demonstration purposes.
