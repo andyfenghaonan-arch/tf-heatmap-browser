@@ -149,11 +149,11 @@
         <div class="demo-badge">DEMO VERSION</div>
         
         <div class="demo-warning">
-            <strong>📍 演示版说明:</strong> 这是一个演示版本，每个转录因子只包含chr1_0.png文件用于功能展示。完整版本包含所有染色体和位置的数据。
+            <strong>📍 Demo Version Notice:</strong> This is a demo version, each transcription factor contains only chr1_0.png files for functional demonstration. The full version contains data for all chromosomes and positions.
         </div>
         
         <div class="info-panel">
-            <strong>📖 使用说明:</strong> 选择转录因子、ENCODE数据集和染色体，然后输入位置 "0" 来查看演示heatmap图像。每个PNG文件覆盖2MB基因组窗口。
+            <strong>📖 Usage Instructions:</strong> Select a transcription factor, ENCODE dataset, and chromosome, then enter position "0" to view the demo heatmap image. Each PNG file covers a 2MB genomic window.
         </div>
         
         <div class="controls">
@@ -191,7 +191,7 @@
         </div>
         
         <div class="heatmap-container" id="heatmapContainer">
-            <div class="loading">请选择参数查看演示heatmap</div>
+            <div class="loading">Please select parameters to view demo heatmap</div>
         </div>
     </div>
 
@@ -248,7 +248,7 @@
             const position = parseInt(positionInput.value);
             
             if (!tf || !encode || !chr || position !== 0) {
-                showError('演示版只支持chr1位置0的数据。请选择chr1并输入位置0。');
+                showError('Demo version only supports chr1 position 0 data. Please select chr1 and enter position 0.');
                 return;
             }
             
@@ -276,7 +276,7 @@
             };
             
             img.onerror = function() {
-                showError(`无法加载演示图像: chr1_0.png<br>请确认已选择正确的转录因子和ENCODE数据集。`);
+                showError(`Unable to load demo image: chr1_0.png<br>Please confirm you have selected the correct transcription factor and ENCODE dataset.`);
             };
             
             img.src = imagePath;
